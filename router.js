@@ -1,25 +1,39 @@
 var methods = require('./methods.js'),
-	utils = require('./utils.js');
+    utils = require('./utils.js'),
+    route = require('./route.js');
 
-module.exports = Route;
+module.exports = Router;
 
-function Route(path){
-	if (!(this instanceof Route)) {
-		return new Route(path);
+function Router(path){
+	if (!(this instanceof Router)) {
+		return new Router(path);
 	}
-	this.path = path;
+  this.path = path;
+  this.map = {};
 };
 
-methods.forEach(function(method){
-  Route.prototype[method] = function(){
-    var cb = utils.flatten([].slice.call(arguments));
-	
-    cb.forEach(function(fn) {
-      if (typeof fn !== 'function') {
-        var msg = method.toUpperCase() + ' requires callback function but got a ' + typeof fn;
-        throw new Error(msg);
-      }
-    });
+Router.prototype.route = function (method, path, cb) {
+  var method = method.toLowerCase();
+
+  if (!path) {
+    throw new Error('Router#' + method + '() requires a path');
+  }
+
+  if (typeof cb !== 'function') {
+    var msg = method.toUpperCase() + ' requires callback function but got a ' + typeof fn;
+    throw new Error(msg);
+  }
+
+  (this.map[method] = this.map[method] || []).push(new route(method, path, cb));
+  return this;
+};
+
+methods.forEach(function (method) {
+  Router.prototype[method] = function () {	
+    var args = [method].concat([].slice.call(arguments));
+    this.route.apply(this, args);
     return this;
   };  
 });
+
+

@@ -1,45 +1,29 @@
-var http = require('http'),
-	fs = require('fs'),
-	path = require('path'),
-	methods = require('./methods.js'),
-	router = require('./router.js'),
-	streamer = NodeStreamer();
-	
-	
-function NodeStreamer() {
-	if (!(this instanceof NodeStreamer)) {
-		return new NodeStreamer();
-	}
-		
-	var self = this;
-	self._routers = router;
-};
+var streamer = require('./streamer')();
 
-NodeStreamer.prototype.listen = function () {
-	var server = http.createServer(this);
-	return server.listen.apply(server, arguments);
-};
+console.log(streamer);
 
-methods.forEach(function (method){
-	streamer[method] = function(path){
-		var route = this._routers(path);
-		route[method].apply(route, Array.prototype.slice.call(arguments, 1));
-		return this;
-	};
+streamer.listen(7000, function(err) {	
+	console.log('Server listening in port 7000');
 });
 
-streamer.get('/', function(req, resp){
+streamer.get('/', function(req, res){
 	console.log(1);
-}, function() {console.log});
+});
 
-streamer.get('/test', function(req, resp){
+streamer.get('/test', function(req, res){
 	console.log(req);
 });
 
-streamer.post('/test', function(req, resp){
-	console.log(req);
+streamer.post('/test', function(req, res){
+	console.log('Test 1');
+	res.end();
 });
 
-streamer.post('/authenticate', function(req, resp){
+streamer.post('/test', function(req, res){
+	console.log('Test 2');
+	res.end();	
+});
+
+streamer.post('/authenticate', function(req, res){
 	console.log(req);
 });
