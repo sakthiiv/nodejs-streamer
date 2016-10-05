@@ -1,19 +1,19 @@
 var methods = require('./methods.js'),
     utils = require('./utils.js'),
-    route = require('./route.js');
+    Layer = require('./layer.js'),
+    Route = require('./route.js');
 
 module.exports = Router;
 
-function Router(path){
+function Router(){
 	if (!(this instanceof Router)) {
-		return new Router(path);
+		return new Router();
 	}
-  this.path = path;
-  this.map = {};
+  this.map = [];  
 };
 
 Router.prototype.route = function (method, path, cb) {
-  var method = method.toLowerCase();
+  var method = method.toLowerCase();  
 
   if (!path) {
     throw new Error('Router#' + method + '() requires a path');
@@ -24,8 +24,47 @@ Router.prototype.route = function (method, path, cb) {
     throw new Error(msg);
   }
 
-  (this.map[method] = this.map[method] || []).push(new route(method, path, cb));
+  var route = new Route(path);
+
+  var layer = new Layer(path, cb);
+  layer.method = method;
+  layer.route = route;
+
+  route.methods[method] = true;
+  this.map.push(layer);
   return this;
+};
+
+Router.prototype.handleMethod = function (layer, method) {
+  return Boolean(layer.route.methods[method]);
+};
+
+Router.prototype.dispatch = function dispatch (req, res) {
+  var idx = 0;
+  var map = this.map;
+
+  var method = req.method.toLowerCase();
+  var path = req.url.toLowerCase();
+  var layer, match;
+
+  while (match !== true && idx < map.length) {
+    layer = this.map[idx++];
+    match = matchLayer(layer, path);
+
+    var hasMethod = this.handleMethod(layer, method);
+
+    if (!hasMethod) {
+      match = false;
+      continue;      
+    }
+  }
+
+  return layer.requestHandler(req, res, match);
+
+};
+
+function matchLayer (layer, path) {
+  return layer.match(path);
 };
 
 methods.forEach(function (method) {
