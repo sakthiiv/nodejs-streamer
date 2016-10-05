@@ -23,15 +23,13 @@ NodeStreamer.prototype.listen = function () {
 };
 
 NodeStreamer.prototype.handle = function(req, res, err) {
-	res.write('This is a test');
-  	res.end();
+	router.dispatch(req, res);
 };
 
 methods.forEach(function (method){
-	NodeStreamer.prototype[method] = function(path){
+	NodeStreamer.prototype[method] = function (path) {
 		var route = this._router;
 		route[method].apply(route, Array.prototype.slice.call(arguments));
 		return this;
 	};
 });
-
