@@ -1,7 +1,6 @@
 module.exports = Route;
 
-function Route(path, method, cb) {
+function Route(path) {
   this.path = path;
-  this.method = method;
-  this.cb = cb;
+  this.methods = {};
 }
